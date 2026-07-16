@@ -1,0 +1,55 @@
+# Environnement virtuel
+venv/
+env/
+
+# Fichiers Python compilés
+__pycache__/
+*.pyc
+
+# Variables d'environnement (sensible !)
+.env
+
+# Base de données locale (si jamais tu bascules sur SQLite en test)
+db.sqlite3
+db.sqlite3-journal
+
+# Fichiers uploadés (images d'hôtels)
+media/
+
+# Fichiers statiques collectés (généré automatiquement, pas à versionner)
+staticfiles/
+static/
+
+# Logs
+*.log
+
+# Fichiers cache de tests
+.pytest_cache/
+.coverage# Environnement virtuel
+venv/
+env/
+
+# Fichiers Python compilés
+__pycache__/
+*.pyc
+
+# Variables d'environnement (sensible !)
+.env
+
+# Base de données locale (si jamais tu bascules sur SQLite en test)
+db.sqlite3
+db.sqlite3-journal
+
+# Fichiers uploadés (images d'hôtels)
+media/
+
+# Fichiers statiques collectés (généré automatiquement, pas à versionner)
+staticfiles/
+static/
+
+# Logs
+*.log
+
+# Fichiers cache de tests
+.pytest_cache/
+.coverage
