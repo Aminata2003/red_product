@@ -37,6 +37,10 @@ function LetterIcon() {
 }
 
 // Couleurs exactes reprises du Figma (hex précis, pas d'approximation Tailwind)
+// "Utilisateurs" reste figé à 600 (valeur maquette) tant que sa définition n'est pas tranchée.
+// "hotels" et "emails" sont dynamiques : le backend doit renvoyer, dans /dashboard/stats/ :
+//   - hotels : nombre total d'hôtels en base
+//   - emails : nombre de comptes admin créés (inscriptions)
 const CARDS = [
   { key: "formulaires", label: "Formulaires", color: "#A88ADD", Icon: EnvelopeIcon },
   { key: "messages", label: "Messages", color: "#0CC2AA", Icon: LetterIcon },
@@ -98,7 +102,11 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-base font-semibold text-gray-800">
-                  {stats ? stats[key] : "…"}
+                  {key === "utilisateurs"
+                    ? 600
+                    : stats
+                    ? stats[key]
+                    : "…"}
                 </p>
                 <p className="text-xs text-gray-500">{label}</p>
                 <p className="text-xs text-gray-400">Je ne sais pas quoi mettre</p>

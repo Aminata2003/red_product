@@ -145,3 +145,18 @@ SIMPLE_JWT = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+# --- E-mail (Brevo SMTP) ---
+# Utilisé pour l'envoi réel du mail de réinitialisation de mot de passe.
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('BREVO_SMTP_HOST')
+EMAIL_PORT = config('BREVO_SMTP_PORT', cast=int)
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = config('BREVO_SMTP_LOGIN')
+EMAIL_HOST_PASSWORD = config('BREVO_SMTP_PASSWORD')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
+# URL du frontend déployé, utilisée pour construire le lien cliquable
+# dans l'e-mail de réinitialisation (ex: http://localhost:5173 en dev).
+FRONTEND_URL = config('FRONTEND_URL')

@@ -10,6 +10,8 @@ class Hotel(models.Model):
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
     city = models.CharField(max_length=100, blank=True)
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=30, blank=True)
     price_per_night = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3, choices=Currency.choices, default=Currency.XOF)
     image = models.ImageField(upload_to='hotels/', blank=True, null=True)
