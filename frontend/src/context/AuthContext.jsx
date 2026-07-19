@@ -45,3 +45,6 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
+const response = await api.post("/auth/login/", { email, password });
+
+console.log(response.data);
