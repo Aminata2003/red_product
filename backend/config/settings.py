@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool)
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS : liste séparée par des virgules dans .env (local) ou dans les
+# variables d'environnement Render (prod). On ajoute toujours le domaine
+# *.onrender.com pour que le déploiement fonctionne même si on oublie de le
+# lister explicitement.
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS.append('.onrender.com')
 
 
 # Application definition
@@ -42,6 +48,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # sert les fichiers statiques en prod
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -49,10 +56,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# CORS_ALLOWED_ORIGINS : les origines codées en dur restent pour le dev local ;
+# on ajoute celles définies dans l'env (ex: l'URL Vercel du frontend en prod),
+# séparées par des virgules, sans écraser les origines locales.
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",  # au cas où tu utilises Vite plutôt que Create React App
-]
+] + [origin for origin in config('EXTRA_CORS_ORIGINS', default='').split(',') if origin]
 
 ROOT_URLCONF = 'config.urls'
 
@@ -76,17 +87,28 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+#
+# En local : lit DB_NAME / DB_USER / DB_PASSWORD / DB_HOST / DB_PORT depuis .env
+# (comme avant). En production sur Render : Render fournit automatiquement une
+# seule variable DATABASE_URL pour la base PostgreSQL managée — si elle est
+# présente, on l'utilise en priorité et on ignore les variables individuelles.
+DATABASE_URL = config('DATABASE_URL', default='')
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME'),
+            'USER': config('DB_USER'),
+            'PASSWORD': config('DB_PASSWORD'),
+            'HOST': config('DB_HOST'),
+            'PORT': config('DB_PORT'),
+        }
+    }
 
 
 # Password validation
@@ -124,6 +146,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # où collectstatic regroupe les fichiers en prod
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -158,5 +189,6 @@ EMAIL_HOST_PASSWORD = config('BREVO_SMTP_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
 # URL du frontend déployé, utilisée pour construire le lien cliquable
-# dans l'e-mail de réinitialisation (ex: http://localhost:5173 en dev).
+# dans l'e-mail de réinitialisation (ex: http://localhost:5173 en dev,
+# https://ton-app.vercel.app en prod).
 FRONTEND_URL = config('FRONTEND_URL')

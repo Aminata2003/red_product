@@ -25,5 +25,9 @@ urlpatterns = [
     path('api/auth/', include('accounts.urls')),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Sert les fichiers médias (images d'hôtels) aussi bien en dev qu'en prod.
+# ⚠️ Sur le plan gratuit de Render, le système de fichiers n'est PAS persistant :
+# les images uploadées disparaissent au redéploiement/redémarrage du service.
+# Acceptable pour une démo/soutenance, mais à remplacer par un stockage externe
+# (Cloudinary, AWS S3...) pour une vraie mise en production durable.
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
