@@ -11,16 +11,30 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false);
 
   const login = async (email, password) => {
-    const response = await api.post('/auth/login/', { email, password });
-    const { access, refresh, user: userData } = response.data;
+  const response = await api.post("/auth/login/", { email, password });
 
-    localStorage.setItem('access_token', access);
-    localStorage.setItem('refresh_token', refresh);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
+  console.log("===== LOGIN RESPONSE =====");
+  console.log(response.data);
 
-    return userData;
-  };
+  const { access, refresh, user: userData } = response.data;
+
+  console.log("Access :", access);
+  console.log("Refresh :", refresh);
+  console.log("User :", userData);
+
+  localStorage.setItem("access_token", access);
+  localStorage.setItem("refresh_token", refresh);
+  localStorage.setItem("user", JSON.stringify(userData));
+
+  console.log(
+    "Token enregistré :",
+    localStorage.getItem("access_token")
+  );
+
+  setUser(userData);
+
+  return userData;
+};
 
   const register = async (username, email, password) => {
     await api.post('/auth/register/', { username, email, password });
