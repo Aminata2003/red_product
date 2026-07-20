@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class Hotel(models.Model):
@@ -6,6 +7,13 @@ class Hotel(models.Model):
         XOF = 'XOF', 'Franc CFA'
         USD = 'USD', 'Dollar'
         EUR = 'EUR', 'Euro'
+
+    owner = models.ForeignKey(
+    settings.AUTH_USER_MODEL,
+    on_delete=models.CASCADE,
+    related_name="hotels",
+    
+)
 
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 // Icône enveloppe (Formulaires, E-mails) — path exact repris du Figma
 function EnvelopeIcon() {
@@ -52,6 +53,7 @@ const CARDS = [
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -91,9 +93,16 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredCards.map(({ key, label, color, Icon }) => (
             <div
-              key={key}
-              className="bg-white rounded-lg p-4 flex items-center gap-3 shadow-sm"
-            >
+            key={key}
+             onClick={() => {
+                if (key === "hotels") {
+                navigate("/hotels");
+          }
+               }}
+           className={`bg-white rounded-lg p-4 flex items-center gap-3 shadow-sm ${
+                key === "hotels" ? "cursor-pointer hover:shadow-md transition" : ""
+              }`}
+              >
               <div
                 className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
                 style={{ backgroundColor: color }}

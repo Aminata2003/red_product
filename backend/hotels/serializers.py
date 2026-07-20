@@ -3,24 +3,64 @@ from .models import Hotel
 
 
 class HotelSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Hotel
-        fields = ['id', 'name', 'address', 'city', 'email', 'phone', 'price_per_night', 'currency', 'image', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+
+        fields = [
+            'id',
+            'name',
+            'address',
+            'city',
+            'email',
+            'phone',
+            'price_per_night',
+            'currency',
+            'image',
+            'created_at',
+            'updated_at',
+            'owner',
+        ]
+
+        read_only_fields = [
+            'id',
+            'created_at',
+            'updated_at',
+            'owner',
+        ]
+
         validators = []  # désactive le UniqueTogetherValidator auto-généré par DRF
 
-    def validate(self, data):
-        name = data.get('name', getattr(self.instance, 'name', None))
-        address = data.get('address', getattr(self.instance, 'address', None))
 
-        queryset = Hotel.objects.filter(name=name, address=address)
+    def validate(self, data):
+
+        name = data.get(
+            'name',
+            getattr(self.instance, 'name', None)
+        )
+
+        address = data.get(
+            'address',
+            getattr(self.instance, 'address', None)
+        )
+
+
+        queryset = Hotel.objects.filter(
+            name=name,
+            address=address
+        )
+
 
         if self.instance:
-            queryset = queryset.exclude(pk=self.instance.pk)
+            queryset = queryset.exclude(
+                pk=self.instance.pk
+            )
+
 
         if queryset.exists():
             raise serializers.ValidationError(
                 "Un hôtel avec le même nom et la même adresse existe déjà."
             )
+
 
         return data

@@ -26,7 +26,7 @@ export default function AuthLayout({ children }) {
       className="absolute inset-0"
          style={{ backgroundColor: '#494C4F', mixBlendMode: 'multiply' }}
       />
-       <div className="relative z-10 mb-8">
+      <div className="relative z-10 mb-8">
         <Logo />
       </div>
       <div className="relative z-10 w-full flex flex-col items-center">
