@@ -92,7 +92,7 @@ export default function Layout({ children, onSearch }) {
           pour rester cohérent visuellement dans toute l'application. */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-64 text-white flex flex-col justify-between
-        transform transition-transform duration-200 ease-in-out relative overflow-hidden
+        transform transition-transform duration-200 ease-in-out overflow-hidden
         md:static md:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{ backgroundColor: '#262626' }}
