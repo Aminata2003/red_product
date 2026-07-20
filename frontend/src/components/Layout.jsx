@@ -70,10 +70,6 @@ export default function Layout({ children, onSearch }) {
   ];
 
   // Photo de la personne connectée (avatar réel si dispo, sinon initiales générées).
-  // 👉 C'est ICI que se règle la couleur du fond (actuellement "random", d'où le jaune foncé).
-  //    Remplace "random" par un code hexa fixe SANS le "#", ex: "F1DCC6" (le ton crème/pêche
-  //    qu'on voit derrière la photo sur la maquette) pour que ça matche même avant que la vraie
-  //    photo soit chargée.
   const avatarUrl =
     user?.avatarUrl ||
     user?.photo ||
@@ -91,14 +87,25 @@ export default function Layout({ children, onSearch }) {
         />
       )}
 
-      {/* Sidebar : tiroir plein écran en mobile, colonne fixe à partir de md */}
+      {/* Sidebar : tiroir plein écran en mobile, colonne fixe à partir de md.
+          Fond avec le même motif de sphères/hexagones que les pages d'auth,
+          pour rester cohérent visuellement dans toute l'application. */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-neutral-800 text-white flex flex-col justify-between
-        transform transition-transform duration-200 ease-in-out
+        className={`fixed inset-y-0 left-0 z-40 w-64 text-white flex flex-col justify-between
+        transform transition-transform duration-200 ease-in-out relative overflow-hidden
         md:static md:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        style={{ backgroundColor: '#262626' }}
       >
-        <div>
+        {/* Motif de fond, assombri par un voile pour rester lisible */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-20 pointer-events-none"
+          style={{ backgroundImage: "url('/images/auth-background.png')" }}
+        />
+        <div className="absolute inset-0 bg-neutral-800/70 pointer-events-none" />
+
+        {/* Contenu de la sidebar, au-dessus du fond */}
+        <div className="relative z-10">
           <div className="p-6 flex items-center justify-between">
             <Logo />
             {/* Bouton fermer, visible seulement en mobile */}
@@ -135,7 +142,7 @@ export default function Layout({ children, onSearch }) {
           </nav>
         </div>
 
-        <div className="p-4 flex items-center gap-3 border-t border-neutral-700">
+        <div className="relative z-10 p-4 flex items-center gap-3 border-t border-neutral-700">
           <img
             src={avatarUrl}
             alt={user?.username || 'Utilisateur'}

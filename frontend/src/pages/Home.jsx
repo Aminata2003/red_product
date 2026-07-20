@@ -1,13 +1,9 @@
 import { Link } from 'react-router-dom';
-import Logo from '../components/Logo';
+import AuthLayout from '../components/AuthLayout';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-neutral-800 flex flex-col items-center justify-center px-4 py-8">
-      <div className="mb-8">
-     <Logo />
-   </div>
-
+    <AuthLayout>
       <div className="bg-white rounded-lg shadow-lg p-6 sm:p-10 w-full max-w-md text-center">
         <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2">
           Bienvenue sur RED PRODUCT
@@ -31,6 +27,6 @@ export default function Home() {
           </Link>
         </div>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

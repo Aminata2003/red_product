@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import Logo from "../components/Logo";
+import AuthLayout from "../components/AuthLayout";
 import api from "../api/axios";
 
 export default function ForgotPassword() {
@@ -27,11 +27,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-800 flex flex-col items-center justify-center px-4 py-8">
-      <div className="mb-8">
-        <Logo />
-      </div>
-
+    <AuthLayout>
       <div className="bg-white w-full max-w-sm rounded-md shadow-lg p-5 sm:p-6">
         <h2 className="text-sm font-semibold text-gray-800 mb-6">
           Mot de passe oublié?
@@ -72,12 +68,12 @@ export default function ForgotPassword() {
         </form>
       </div>
 
-      <p className="mt-6 text-sm text-gray-300 text-center">
+      <p className="mt-6 text-sm text-gray-300 text-center relative z-10">
         Revenir à la{" "}
         <Link to="/login" className="text-yellow-500 font-semibold hover:underline">
           connexion
         </Link>
       </p>
-    </div>
+    </AuthLayout>
   );
 }

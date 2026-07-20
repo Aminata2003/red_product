@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Logo from "../components/Logo";
+import AuthLayout from "../components/AuthLayout";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
@@ -33,12 +33,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-800 flex flex-col items-center justify-center px-4 py-8">
-
-      <div className="mb-8">
-        <Logo />
-      </div>
-
+    <AuthLayout>
       <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 w-full max-w-md">
 
         <p className="text-sm text-gray-600 mb-8">
@@ -94,12 +89,12 @@ export default function Login() {
 
       <Link
         to="/forgot-password"
-        className="mt-5 text-yellow-400 text-sm"
+        className="mt-5 text-yellow-400 text-sm relative z-10"
       >
         Mot de passe oublié ?
       </Link>
 
-      <p className="mt-4 text-gray-300 text-sm text-center">
+      <p className="mt-4 text-gray-300 text-sm text-center relative z-10">
         Vous n'avez pas de compte ?{" "}
         <Link
           to="/register"
@@ -108,7 +103,6 @@ export default function Login() {
           S'inscrire
         </Link>
       </p>
-
-    </div>
+    </AuthLayout>
   );
 }
