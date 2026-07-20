@@ -19,10 +19,10 @@ export default function AuthLayout({ children }) {
     >
       {/* Motif de fond, assombri par un voile pour rester lisible */}
       <div
-        className="absolute inset-0 bg-cover bg-center opacity-20"
+        className="absolute inset-0 bg-cover bg-center opacity-40"
         style={{ backgroundImage: "url('/images/auth-background.png')" }}
       />
-      <div className="absolute inset-0 bg-neutral-800/70" />
+      <div className="absolute inset-0 bg-neutral-800/40" />
 
       {/* Contenu au-dessus du fond */}
       <div className="relative z-10 mb-8">

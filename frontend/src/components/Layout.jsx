@@ -99,10 +99,10 @@ export default function Layout({ children, onSearch }) {
       >
         {/* Motif de fond, assombri par un voile pour rester lisible */}
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-20 pointer-events-none"
+          className="absolute inset-0 bg-cover bg-center opacity-40 pointer-events-none"
           style={{ backgroundImage: "url('/images/auth-background.png')" }}
         />
-        <div className="absolute inset-0 bg-neutral-800/70 pointer-events-none" />
+        <div className="absolute inset-0 bg-neutral-800/40 pointer-events-none" />
 
         {/* Contenu de la sidebar, au-dessus du fond */}
         <div className="relative z-10">
