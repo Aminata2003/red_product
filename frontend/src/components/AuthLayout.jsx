@@ -17,15 +17,16 @@ export default function AuthLayout({ children }) {
       className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden"
       style={{ backgroundColor: '#262626' }}
     >
-      {/* Motif de fond, assombri par un voile pour rester lisible */}
-      <div
-        className="absolute inset-0 bg-cover bg-center opacity-40"
+      {/* Motif de fond, teinté via mode de fusion "Multiply" — technique exacte du Figma */}
+        <div
+         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url('/images/auth-background.png')" }}
+          />
+         <div
+      className="absolute inset-0"
+         style={{ backgroundColor: '#494C4F', mixBlendMode: 'multiply' }}
       />
-      <div className="absolute inset-0 bg-neutral-800/40" />
-
-      {/* Contenu au-dessus du fond */}
-      <div className="relative z-10 mb-8">
+       <div className="relative z-10 mb-8">
         <Logo />
       </div>
       <div className="relative z-10 w-full flex flex-col items-center">
