@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 
 // Icône enveloppe (Formulaires, E-mails) — path exact repris du Figma
 function EnvelopeIcon() {
@@ -95,30 +96,51 @@ export default function Dashboard() {
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-          {filteredCards.map(({ key, label, color, Icon }) => (
-            <div
-              key={key}
-              className="bg-white rounded-lg p-3 flex items-center gap-3 shadow-sm"
-            >
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                style={{ backgroundColor: color }}
-              >
-                <Icon />
-              </div>
-              <div>
-                <p className="text-base font-semibold text-gray-800">
-                  {key === "utilisateurs"
-                    ? 600
-                    : stats
-                    ? stats[key]
-                    : "…"}
-                </p>
-                <p className="text-xs text-gray-500">{label}</p>
-                <p className="text-xs text-gray-400">Je ne sais pas quoi mettre</p>
-              </div>
-            </div>
-          ))}
+         {filteredCards.map(({ key, label, color, Icon }) => {
+  const CardContent = (
+    <>
+      <div
+        className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+        style={{ backgroundColor: color }}
+      >
+        <Icon />
+      </div>
+
+      <div>
+        <p className="text-base font-semibold text-gray-800">
+          {key === "utilisateurs"
+            ? 600
+            : stats
+            ? stats[key]
+            : "…"}
+        </p>
+
+        <p className="text-xs text-gray-500">{label}</p>
+
+        <p className="text-xs text-gray-400">
+          Je ne sais pas quoi mettre
+        </p>
+      </div>
+    </>
+  );
+
+  return key === "hotels" ? (
+    <Link
+      key={key}
+      to="/hotels"
+      className="bg-white rounded-lg p-3 flex items-center gap-3 shadow-sm cursor-pointer hover:shadow-md transition"
+    >
+      {CardContent}
+    </Link>
+  ) : (
+    <div
+      key={key}
+      className="bg-white rounded-lg p-3 flex items-center gap-3 shadow-sm"
+    >
+      {CardContent}
+    </div>
+  );
+})} 
         </div>
       )}
     </Layout>
