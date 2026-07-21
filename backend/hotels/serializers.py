@@ -11,7 +11,6 @@ class HotelSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'address',
-            'city',
             'email',
             'phone',
             'price_per_night',
