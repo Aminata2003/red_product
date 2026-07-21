@@ -17,7 +17,7 @@ export default function HotelList() {
   const fetchHotels = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/hotels/");
+      const response = await api.get("/api/hotels/");
       setHotels(response.data);
     } catch (err) {
       setError("Impossible de charger la liste des hôtels.");
@@ -34,7 +34,7 @@ export default function HotelList() {
     if (!window.confirm("Supprimer cet hôtel définitivement ?")) return;
 
     try {
-      await api.delete(`/hotels/${id}/`);
+      await api.delete(`/api/hotels/${id}/`);
       setHotels((prev) => prev.filter((hotel) => hotel.id !== id));
     } catch (err) {
       alert("Erreur lors de la suppression.");

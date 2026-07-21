@@ -63,7 +63,7 @@ export default function HotelFormModal({ hotelId, onClose, onSaved }) {
 
     const fetchHotel = async () => {
       try {
-        const response = await api.get(`/hotels/${hotelId}/`);
+        const response = await api.get(`/api/hotels/${hotelId}/`);
         const hotel = response.data;
         setForm({
           name: hotel.name,
@@ -142,11 +142,11 @@ export default function HotelFormModal({ hotelId, onClose, onSaved }) {
 
     try {
       if (isEdit) {
-        await api.patch(`/hotels/${hotelId}/`, data, {
+        await api.patch(`/api/hotels/${hotelId}/`, data, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       } else {
-        await api.post("/hotels/", data, {
+        await api.post("/api/hotels/", data, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       }

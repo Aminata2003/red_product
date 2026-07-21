@@ -59,7 +59,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await api.get("/dashboard/stats/");
+        const response = await api.get("/api/dashboard/stats/");
         setStats(response.data);
       } catch (err) {
         setError("Impossible de charger les statistiques.");
