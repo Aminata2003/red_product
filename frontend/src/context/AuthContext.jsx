@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false);
 
   const login = async (email, password) => {
-  const response = await api.post("/auth/login/", { email, password });
+  const response = await api.post("/api/auth/login/", { email, password });
 
 
   console.log("===== LOGIN RESPONSE =====");
@@ -38,7 +38,7 @@ export function AuthProvider({ children }) {
 };
 
   const register = async (username, email, password) => {
-    await api.post("/auth/register/", { username, email, password });
+    await api.post("/api/auth/register/", { username, email, password });
 
   };
 
