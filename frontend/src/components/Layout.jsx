@@ -44,15 +44,45 @@ function HotelsIcon({ active }) {
   );
 }
 
+// Modale générique réutilisable
+function Modal({ open, onClose, title, children }) {
+  if (!open) return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-lg w-full max-w-sm p-6 relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 cursor-pointer"
+          aria-label="Fermer"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <h2 className="text-lg font-semibold text-[#262626] mb-4">{title}</h2>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function Layout({ children, onSearch }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const handleLogout = () => {
-    const confirmLogout=window.confirm("Êtes-vous sûr de vouloir vous déconnecter ?");
+    const confirmLogout = window.confirm("Êtes-vous sûr de vouloir vous déconnecter ?");
     if (!confirmLogout) return;
     logout();
     navigate('/login');
@@ -71,7 +101,6 @@ export default function Layout({ children, onSearch }) {
     { path: '/hotels', label: 'Liste des hôtels', Icon: HotelsIcon },
   ];
 
-  // Photo de la personne connectée (avatar réel si dispo, sinon initiales générées).
   const avatarUrl =
     user?.avatarUrl ||
     user?.photo ||
@@ -80,8 +109,7 @@ export default function Layout({ children, onSearch }) {
     )}&background=F1DCC6&color=4C5053`;
 
   return (
-    <div className="flex min-h-screen  overflow-hidden bg-gray-100">
-      {/* Overlay sombre derrière le sidebar quand il est ouvert en mobile */}
+    <div className="flex min-h-screen overflow-hidden bg-gray-100">
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/30 z-20 md:hidden"
@@ -89,9 +117,6 @@ export default function Layout({ children, onSearch }) {
         />
       )}
 
-      {/* Sidebar : tiroir plein écran en mobile, colonne fixe à partir de md.
-          Fond avec le même motif de sphères/hexagones que les pages d'auth,
-          pour rester cohérent visuellement dans toute l'application. */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-[240px] text-white flex flex-col justify-between
         transform transition-transform duration-200 ease-in-out overflow-hidden
@@ -99,26 +124,19 @@ export default function Layout({ children, onSearch }) {
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{ backgroundColor: '#262626' }}
       >
-        {/* Motif de fond, assombri par un voile pour rester lisible */}
         <div
-         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('/images/auth-background.png')" }}
-      />
-
-    <div
-      className="absolute inset-0"
-      style={{
-        backgroundColor: '#494C4F',
-       mixBlendMode: 'multiply'
-     }}
-       />
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/images/auth-background.png')" }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{ backgroundColor: '#494C4F', mixBlendMode: 'multiply' }}
+        />
         <div className="absolute inset-0 bg-neutral-800/40 pointer-events-none" />
 
-        {/* Contenu de la sidebar, au-dessus du fond */}
         <div className="relative z-10">
-         <div className="px-7 pt-5 pb-8 flex items-center justify-between">
+          <div className="px-7 pt-5 pb-8 flex items-center justify-between">
             <Logo />
-            {/* Bouton fermer, visible seulement en mobile */}
             <button
               onClick={() => setSidebarOpen(false)}
               className="md:hidden text-gray-100 hover:text-white cursor-pointer"
@@ -138,7 +156,7 @@ export default function Layout({ children, onSearch }) {
                   key={path}
                   to={path}
                   onClick={handleNavClick}
-                 className={`flex items-center gap-5 h-[38px] px-7 text-[17px] cursor-pointer ${
+                  className={`flex items-center gap-5 h-[38px] px-7 text-[17px] cursor-pointer ${
                     active
                       ? 'bg-white text-neutral-900 font-medium'
                       : 'text-gray-300 hover:bg-neutral-700'
@@ -169,131 +187,109 @@ export default function Layout({ children, onSearch }) {
 
       {/* Contenu principal */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Navbar */}
-       <header className="h-[74px] bg-white border-b border-[#ECECEC] flex items-center justify-between px-8">
+        {/* Navbar : gap et tailles réduites sur petit écran pour éviter que ça se tasse */}
+        <header className="h-[74px] bg-white border-b border-[#ECECEC] flex items-center justify-between px-4 sm:px-8 gap-2">
 
-  {/* Gauche */}
-  <div className="flex items-center gap-3">
+          {/* Gauche */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden text-gray-600 shrink-0 cursor-pointer"
+              aria-label="Ouvrir le menu"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 6h18M3 12h18M3 18h18" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
 
-    {/* Bouton menu mobile */}
-    <button
-      onClick={() => setSidebarOpen(true)}
-      className="md:hidden text-gray-600 shrink-0 cursor-pointer"
-      aria-label="Ouvrir le menu"
-    >
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      >
-        <path
-          d="M3 6h18M3 12h18M3 18h18"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </button>
+            <h1 className="text-[17px] sm:text-[22px] font-semibold text-[#262626] truncate">
+              {navItems.find((i) => i.path === location.pathname)?.label || 'RED PRODUCT'}
+            </h1>
+          </div>
 
-    <h1 className="text-[22px] font-semibold text-[#262626]">
-      {navItems.find((i) => i.path === location.pathname)?.label ||
-        "RED PRODUCT"}
-    </h1>
+          {/* Droite */}
+          <div className="flex items-center gap-2 sm:gap-4 md:gap-7 shrink-0">
 
-  </div>
+            {/* Recherche : cachée sur mobile pour laisser la place, visible dès sm */}
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              placeholder="Recherche"
+              className="
+                hidden sm:block
+                w-[160px] md:w-[285px]
+                h-[36px]
+                rounded-full
+                border
+                border-[#E6E6E6]
+                px-5
+                text-[15px]
+                outline-none
+              "
+            />
 
-  {/* Droite */}
-  <div className="flex items-center gap-7">
+            {/* Notification -> ouvre une modale au lieu d'afficher un badge fixe */}
+            <button
+              onClick={() => setNotifOpen(true)}
+              className="relative w-6 h-6 flex items-center justify-center cursor-pointer shrink-0"
+              aria-label="Notifications"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
 
-    <input
-      type="text"
-      value={searchTerm}
-      onChange={handleSearchChange}
-      placeholder="Recherche"
-      className="
-        w-[285px]
-        h-[36px]
-        rounded-full
-        border
-        border-[#E6E6E6]
-        px-5
-        text-[15px]
-        outline-none
-      "
-    />
+            {/* Avatar -> ouvre la modale profil */}
+            <button onClick={() => setProfileOpen(true)} className="shrink-0 cursor-pointer" aria-label="Profil">
+              <img
+                src={avatarUrl}
+                alt={user?.username || 'Utilisateur'}
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+              />
+            </button>
 
-    {/* Notification */}
-    <button className="relative w-6 h-6 flex items-center justify-center cursor-pointer">
-
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      >
-        <path
-          d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M13.73 21a2 2 0 0 1-3.46 0"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-
-      <span className="absolute -top-1.5 -right-1.5 bg-yellow-400 text-black text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center">
-        3
-      </span>
-
-    </button>
-
-    {/* Avatar */}
-    <img
-      src={avatarUrl}
-      alt={user?.username || "Utilisateur"}
-      className="w-10 h-10 rounded-full object-cover"
-    />
-
-    {/* Déconnexion */}
-    <button
-      onClick={handleLogout}
-      title="Déconnexion"
-      className="text-gray-500 hover:text-gray-800 cursor-pointer"
-    >
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      >
-        <path
-          d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M10 17l5-5-5-5M15 12H3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </button>
-
-  </div>
-
-</header>
+            {/* Déconnexion */}
+            <button
+              onClick={handleLogout}
+              title="Déconnexion"
+              className="text-gray-500 hover:text-gray-800 cursor-pointer shrink-0"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M10 17l5-5-5-5M15 12H3" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </div>
+        </header>
 
         {/* Contenu de la page */}
-       <main className="flex-1 bg-[#F4F4F4] px-8 pt-0 pb-8 overflow-hidden">{children}</main>
+        <main className="flex-1 bg-[#F4F4F4] px-4 sm:px-8 pt-0 pb-8 overflow-y-auto">{children}</main>
       </div>
+
+      {/* Modale Notifications */}
+      <Modal open={notifOpen} onClose={() => setNotifOpen(false)} title="Notifications">
+        <p className="text-sm text-gray-500">Vous n'avez pas reçu de message.</p>
+      </Modal>
+
+      {/* Modale Profil */}
+      <Modal open={profileOpen} onClose={() => setProfileOpen(false)} title="Mon profil">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <img
+            src={avatarUrl}
+            alt={user?.username || 'Utilisateur'}
+            className="w-16 h-16 rounded-full object-cover"
+          />
+          <p className="text-base font-medium text-[#262626]">
+            Bienvenu {user?.username || 'Utilisateur'}
+          </p>
+          <div className="w-full text-left text-sm text-gray-600 mt-2 space-y-1">
+            <p><span className="font-medium text-gray-800">Nom :</span> {user?.username || '—'}</p>
+            <p><span className="font-medium text-gray-800">Email :</span> {user?.email || '—'}</p>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
