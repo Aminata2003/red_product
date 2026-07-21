@@ -8,7 +8,6 @@ import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import HotelList from './pages/HotelList';
-import HotelForm from './pages/HotelForm';
 
 function App() {
   return (
@@ -22,8 +21,6 @@ function App() {
           <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/hotels" element={<PrivateRoute><HotelList /></PrivateRoute>} />
-          <Route path="/hotels/new" element={<PrivateRoute><HotelForm /></PrivateRoute>} />
-          <Route path="/hotels/:id/edit" element={<PrivateRoute><HotelForm /></PrivateRoute>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

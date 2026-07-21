@@ -61,7 +61,7 @@ export default function ForgotPassword() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-neutral-700 hover:bg-neutral-800 text-white py-2.5 rounded transition font-medium disabled:opacity-50"
+            className="w-full bg-neutral-700 hover:bg-neutral-800 text-white py-2.5 rounded transition font-medium disabled:opacity-50 cursor-pointer"
           >
             {loading ? "Envoi..." : "Envoyer"}
           </button>

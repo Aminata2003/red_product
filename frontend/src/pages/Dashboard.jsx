@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 // Icône enveloppe (Formulaires, E-mails) — path exact repris du Figma
 function EnvelopeIcon() {
@@ -53,7 +52,6 @@ const CARDS = [
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -76,11 +74,17 @@ export default function Dashboard() {
 
   return (
     <Layout onSearch={setSearchTerm}>
-      <div className="bg-white rounded-lg p-4 sm:p-6 mb-6">
-        <h2 className="text-base sm:text-lg font-semibold text-gray-800">
-          Bienvenue sur RED PRODUCT
-        </h2>
+        {/* Barre blanche */}
+        <div className="sticky top-0 z-20 bg-white border-b border-gray-200 px-8 py-2 -mx-8 mb-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex flex-col items-start gap-1">
+              <h2 className="text-4xl font-light text-gray-800">
+                Bienvenue sur RED PRODUCT
+              </h2>
+              
         <p className="text-sm text-gray-400">Lorem ipsum dolor sit amet consectetur</p>
+      </div>
+      </div>
       </div>
 
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
@@ -90,19 +94,12 @@ export default function Dashboard() {
           Aucune carte ne correspond à « {searchTerm} ».
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
           {filteredCards.map(({ key, label, color, Icon }) => (
             <div
-            key={key}
-             onClick={() => {
-                if (key === "hotels") {
-                navigate("/hotels");
-          }
-               }}
-           className={`bg-white rounded-lg p-4 flex items-center gap-3 shadow-sm ${
-                key === "hotels" ? "cursor-pointer hover:shadow-md transition" : ""
-              }`}
-              >
+              key={key}
+              className="bg-white rounded-lg p-3 flex items-center gap-3 shadow-sm"
+            >
               <div
                 className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
                 style={{ backgroundColor: color }}

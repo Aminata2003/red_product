@@ -106,7 +106,7 @@ export default function Register() {
 
           <button
             type="submit"
-            className="w-full bg-neutral-700 hover:bg-neutral-800 text-white rounded py-3 transition"
+            className="w-full bg-neutral-700 hover:bg-neutral-800 text-white rounded py-3 transition cursor-pointer"
           >
             S'inscrire
           </button>

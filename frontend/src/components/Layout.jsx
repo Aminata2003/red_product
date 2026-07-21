@@ -52,6 +52,8 @@ export default function Layout({ children, onSearch }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
+    const confirmLogout=window.confirm("Êtes-vous sûr de vouloir vous déconnecter ?");
+    if (!confirmLogout) return;
     logout();
     navigate('/login');
   };
@@ -78,11 +80,11 @@ export default function Layout({ children, onSearch }) {
     )}&background=F1DCC6&color=4C5053`;
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen  overflow-hidden bg-gray-100">
       {/* Overlay sombre derrière le sidebar quand il est ouvert en mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/40 z-30 md:hidden"
+          className="fixed inset-0 bg-black/30 z-20 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -91,30 +93,35 @@ export default function Layout({ children, onSearch }) {
           Fond avec le même motif de sphères/hexagones que les pages d'auth,
           pour rester cohérent visuellement dans toute l'application. */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 text-white flex flex-col justify-between
+        className={`fixed inset-y-0 left-0 z-40 w-[240px] text-white flex flex-col justify-between
         transform transition-transform duration-200 ease-in-out overflow-hidden
         md:static md:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{ backgroundColor: '#262626' }}
       >
-        {/* Motif de fond, teinté via mode de fusion "Multiply" — technique exacte du Figma */}
-     <div
-             className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: "url('/images/auth-background.png')" }}
-          />
-      <div
-           className="absolute inset-0"
-            style={{ backgroundColor: '#494C4F', mixBlendMode: 'multiply' }}
-           />
+        {/* Motif de fond, assombri par un voile pour rester lisible */}
+        <div
+         className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url('/images/auth-background.png')" }}
+      />
+
+    <div
+      className="absolute inset-0"
+      style={{
+        backgroundColor: '#494C4F',
+       mixBlendMode: 'multiply'
+     }}
+       />
+        <div className="absolute inset-0 bg-neutral-800/40 pointer-events-none" />
 
         {/* Contenu de la sidebar, au-dessus du fond */}
         <div className="relative z-10">
-          <div className="p-6 flex items-center justify-between">
+         <div className="px-7 pt-5 pb-8 flex items-center justify-between">
             <Logo />
             {/* Bouton fermer, visible seulement en mobile */}
             <button
               onClick={() => setSidebarOpen(false)}
-              className="md:hidden text-gray-300 hover:text-white"
+              className="md:hidden text-gray-100 hover:text-white cursor-pointer"
               aria-label="Fermer le menu"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -131,7 +138,7 @@ export default function Layout({ children, onSearch }) {
                   key={path}
                   to={path}
                   onClick={handleNavClick}
-                  className={`flex items-center gap-3 px-6 py-3 text-sm ${
+                 className={`flex items-center gap-5 h-[38px] px-7 text-[17px] cursor-pointer ${
                     active
                       ? 'bg-white text-neutral-900 font-medium'
                       : 'text-gray-300 hover:bg-neutral-700'
@@ -161,57 +168,131 @@ export default function Layout({ children, onSearch }) {
       </aside>
 
       {/* Contenu principal */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Navbar */}
-        <header className="h-16 bg-white border-b flex items-center justify-between px-4 sm:px-6 gap-2">
-          <div className="flex items-center gap-3 min-w-0">
-            {/* Bouton hamburger, visible seulement en mobile */}
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="md:hidden text-gray-600 shrink-0"
-              aria-label="Ouvrir le menu"
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M3 6h18M3 12h18M3 18h18" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            <h1 className="font-semibold text-gray-800 truncate">
-              {navItems.find((i) => i.path === location.pathname)?.label || 'RED PRODUCT'}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              placeholder="Recherche"
-              className="border rounded-full px-4 py-1.5 text-sm w-28 sm:w-56 focus:outline-none focus:ring-1 focus:ring-gray-300"
-            />
-            <button className="relative w-6 h-6 flex items-center justify-center shrink-0">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span className="absolute -top-1.5 -right-1.5 bg-yellow-400 text-black text-[10px] font-semibold leading-none rounded-full w-4 h-4 flex items-center justify-center ring-2 ring-white">
-                3
-              </span>
-            </button>
-            <img
-              src={avatarUrl}
-              alt={user?.username || 'Utilisateur'}
-              className="w-8 h-8 rounded-full object-cover shrink-0"
-            />
-            <button onClick={handleLogout} title="Déconnexion" className="text-gray-500 hover:text-gray-800 shrink-0">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M10 17l5-5-5-5M15 12H3" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          </div>
-        </header>
+       <header className="h-[74px] bg-white border-b border-[#ECECEC] flex items-center justify-between px-8">
+
+  {/* Gauche */}
+  <div className="flex items-center gap-3">
+
+    {/* Bouton menu mobile */}
+    <button
+      onClick={() => setSidebarOpen(true)}
+      className="md:hidden text-gray-600 shrink-0 cursor-pointer"
+      aria-label="Ouvrir le menu"
+    >
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        <path
+          d="M3 6h18M3 12h18M3 18h18"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
+
+    <h1 className="text-[22px] font-semibold text-[#262626]">
+      {navItems.find((i) => i.path === location.pathname)?.label ||
+        "RED PRODUCT"}
+    </h1>
+
+  </div>
+
+  {/* Droite */}
+  <div className="flex items-center gap-7">
+
+    <input
+      type="text"
+      value={searchTerm}
+      onChange={handleSearchChange}
+      placeholder="Recherche"
+      className="
+        w-[285px]
+        h-[36px]
+        rounded-full
+        border
+        border-[#E6E6E6]
+        px-5
+        text-[15px]
+        outline-none
+      "
+    />
+
+    {/* Notification */}
+    <button className="relative w-6 h-6 flex items-center justify-center cursor-pointer">
+
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        <path
+          d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M13.73 21a2 2 0 0 1-3.46 0"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+
+      <span className="absolute -top-1.5 -right-1.5 bg-yellow-400 text-black text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center">
+        3
+      </span>
+
+    </button>
+
+    {/* Avatar */}
+    <img
+      src={avatarUrl}
+      alt={user?.username || "Utilisateur"}
+      className="w-10 h-10 rounded-full object-cover"
+    />
+
+    {/* Déconnexion */}
+    <button
+      onClick={handleLogout}
+      title="Déconnexion"
+      className="text-gray-500 hover:text-gray-800 cursor-pointer"
+    >
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        <path
+          d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M10 17l5-5-5-5M15 12H3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
+
+  </div>
+
+</header>
 
         {/* Contenu de la page */}
-        <main className="flex-1 p-4 sm:p-6">{children}</main>
+       <main className="flex-1 bg-[#F4F4F4] px-8 pt-0 pb-8 overflow-hidden">{children}</main>
       </div>
     </div>
   );
