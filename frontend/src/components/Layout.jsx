@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 import Logo from './Logo';
 
 // Icône Dashboard (issue du Figma)
@@ -44,7 +45,6 @@ function HotelsIcon({ active }) {
   );
 }
 
-// Modale générique réutilisable
 function Modal({ open, onClose, title, children }) {
   if (!open) return null;
   return (
@@ -75,11 +75,80 @@ function Modal({ open, onClose, title, children }) {
 export default function Layout({ children, onSearch }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+
+  // --- Notifications : contenu fixe, pas de données sensibles d'autres comptes ---
+  const notifications = [
+    { id: 1, message: `Bienvenue, ${user?.username || 'Admin'} !` },
+    { id: 2, message: 'Vous pouvez mettre à jour votre profil (nom, photo) à tout moment.' },
+  ];
+  const notifBadge = notifications.length; // toujours 2
+
+  const openNotifModal = () => {
+    setNotifOpen(true);
+  };
+
+  // --- Profil éditable (nom + avatar) ---
+  const fileInputRef = useRef(null);
+  const [editName, setEditName] = useState(user?.username || '');
+  const [currentAvatar, setCurrentAvatar] = useState(user?.avatar || null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [loadingProfile, setLoadingProfile] = useState(false);
+
+  const openProfileModal = async () => {
+    setPreviewUrl(null);
+    setSelectedFile(null);
+    setSaveError('');
+    setProfileOpen(true);
+    setLoadingProfile(true);
+    try {
+      const res = await api.get('/api/auth/me/');
+      setEditName(res.data.username || '');
+      setCurrentAvatar(res.data.avatar || null);
+    } catch (err) {
+      console.error('Erreur chargement profil :', err);
+      setEditName(user?.username || '');
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const handleProfileSave = async () => {
+    setSaving(true);
+    setSaveError('');
+    try {
+      const formData = new FormData();
+      formData.append('username', editName);
+      if (selectedFile) {
+        formData.append('avatar', selectedFile);
+      }
+      const res = await api.patch('/api/auth/me/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      updateUser(res.data);
+      setCurrentAvatar(res.data.avatar || null);
+      setProfileOpen(false);
+    } catch (err) {
+      console.error('Erreur mise à jour profil :', err);
+      setSaveError("La mise à jour a échoué. Réessaie.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleLogout = () => {
     const confirmLogout = window.confirm("Êtes-vous sûr de vouloir vous déconnecter ?");
@@ -102,11 +171,11 @@ export default function Layout({ children, onSearch }) {
   ];
 
   const avatarUrl =
+    previewUrl ||
+    currentAvatar ||
     user?.avatarUrl ||
     user?.photo ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      user?.username || 'U'
-    )}&background=F1DCC6&color=4C5053`;
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.username || 'U')}&background=F1DCC6&color=4C5053`;
 
   return (
     <div className="flex min-h-screen overflow-hidden bg-gray-100">
@@ -187,7 +256,6 @@ export default function Layout({ children, onSearch }) {
 
       {/* Contenu principal */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Navbar : gap et tailles réduites sur petit écran pour éviter que ça se tasse */}
         <header className="h-[74px] bg-white border-b border-[#ECECEC] flex items-center justify-between px-4 sm:px-8 gap-2">
 
           {/* Gauche */}
@@ -210,7 +278,6 @@ export default function Layout({ children, onSearch }) {
           {/* Droite */}
           <div className="flex items-center gap-2 sm:gap-4 md:gap-7 shrink-0">
 
-            {/* Recherche : cachée sur mobile pour laisser la place, visible dès sm */}
             <input
               type="text"
               value={searchTerm}
@@ -229,9 +296,9 @@ export default function Layout({ children, onSearch }) {
               "
             />
 
-            {/* Notification -> ouvre une modale au lieu d'afficher un badge fixe */}
+            {/* Notification -> ouvre une modale avec 2 messages fixes */}
             <button
-              onClick={() => setNotifOpen(true)}
+              onClick={openNotifModal}
               className="relative w-6 h-6 flex items-center justify-center cursor-pointer shrink-0"
               aria-label="Notifications"
             >
@@ -239,10 +306,15 @@ export default function Layout({ children, onSearch }) {
                 <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
+              {notifBadge > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-yellow-400 text-black text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center">
+                  {notifBadge}
+                </span>
+              )}
             </button>
 
             {/* Avatar -> ouvre la modale profil */}
-            <button onClick={() => setProfileOpen(true)} className="shrink-0 cursor-pointer" aria-label="Profil">
+            <button onClick={openProfileModal} className="shrink-0 cursor-pointer" aria-label="Profil">
               <img
                 src={avatarUrl}
                 alt={user?.username || 'Utilisateur'}
@@ -270,25 +342,72 @@ export default function Layout({ children, onSearch }) {
 
       {/* Modale Notifications */}
       <Modal open={notifOpen} onClose={() => setNotifOpen(false)} title="Notifications">
-        <p className="text-sm text-gray-500">Vous n'avez pas reçu de message.</p>
+        <ul className="space-y-3">
+          {notifications.map((n) => (
+            <li key={n.id} className="text-sm text-gray-700">
+              {n.message}
+            </li>
+          ))}
+        </ul>
       </Modal>
 
-      {/* Modale Profil */}
+      {/* Modale Profil - éditable */}
       <Modal open={profileOpen} onClose={() => setProfileOpen(false)} title="Mon profil">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <img
-            src={avatarUrl}
-            alt={user?.username || 'Utilisateur'}
-            className="w-16 h-16 rounded-full object-cover"
-          />
-          <p className="text-base font-medium text-[#262626]">
-            Bienvenu {user?.username || 'Utilisateur'}
-          </p>
-          <div className="w-full text-left text-sm text-gray-600 mt-2 space-y-1">
-            <p><span className="font-medium text-gray-800">Nom :</span> {user?.username || '—'}</p>
-            <p><span className="font-medium text-gray-800">Email :</span> {user?.email || '—'}</p>
+        {loadingProfile ? (
+          <p className="text-sm text-gray-400 text-center">Chargement...</p>
+        ) : (
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative">
+              <img
+                src={avatarUrl}
+                alt={user?.username || 'Utilisateur'}
+                className="w-16 h-16 rounded-full object-cover"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute -bottom-1 -right-1 bg-white border border-gray-200 rounded-full w-6 h-6 flex items-center justify-center text-gray-500 hover:text-gray-800 cursor-pointer"
+                aria-label="Changer la photo"
+                type="button"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+                </svg>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
+
+            <div className="w-full text-left text-sm mt-2 space-y-3">
+              <div>
+                <label className="block text-gray-500 mb-1">Nom</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400"
+                />
+              </div>
+              <p className="text-gray-500">
+                <span className="font-medium text-gray-800">Email :</span> {user?.email || '—'}
+              </p>
+            </div>
+
+            {saveError && <p className="text-xs text-red-500">{saveError}</p>}
+
+            <button
+              onClick={handleProfileSave}
+              disabled={saving}
+              className="w-full bg-[#262626] text-white rounded-lg py-2 text-sm font-medium mt-2 disabled:opacity-50 cursor-pointer"
+            >
+              {saving ? 'Enregistrement...' : 'Enregistrer'}
+            </button>
           </div>
-        </div>
+        )}
       </Modal>
     </div>
   );
