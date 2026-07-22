@@ -11,35 +11,19 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false);
 
   const login = async (email, password) => {
-  const response = await api.post("/api/auth/login/", { email, password });
+    const response = await api.post("/api/auth/login/", { email, password });
+    const { access, refresh, user: userData } = response.data;
 
+    localStorage.setItem("access_token", access);
+    localStorage.setItem("refresh_token", refresh);
+    localStorage.setItem("user", JSON.stringify(userData));
 
-  console.log("===== LOGIN RESPONSE =====");
-  console.log(response.data);
-
-  const { access, refresh, user: userData } = response.data;
-
-  console.log("Access :", access);
-  console.log("Refresh :", refresh);
-  console.log("User :", userData);
-
-  localStorage.setItem("access_token", access);
-  localStorage.setItem("refresh_token", refresh);
-  localStorage.setItem("user", JSON.stringify(userData));
-
-  console.log(
-    "Token enregistré :",
-    localStorage.getItem("access_token")
-  );
-
-  setUser(userData);
-
-  return userData;
-};
+    setUser(userData);
+    return userData;
+  };
 
   const register = async (username, email, password) => {
-    await api.post("/api/auth/register/", { username, email, password });
-
+    await api.post('/api/auth/register/', { username, email, password });
   };
 
   const logout = () => {
@@ -49,10 +33,20 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  // Met à jour les infos de l'utilisateur connecté (après modification du
+  // profil : nom, avatar...) sans avoir besoin de se reconnecter.
+  const updateUser = (newData) => {
+    setUser((prev) => {
+      const merged = { ...prev, ...newData };
+      localStorage.setItem('user', JSON.stringify(merged));
+      return merged;
+    });
+  };
+
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated, loading, setLoading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateUser, isAuthenticated, loading, setLoading }}>
       {children}
     </AuthContext.Provider>
   );

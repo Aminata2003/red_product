@@ -26,7 +26,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email']
+        fields = ['id', 'username', 'email', 'avatar']
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -38,3 +38,21 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
         data['user'] = UserSerializer(self.user).data
         return data
+
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    """
+    Utilisé par MeView : permet à l'admin connecté de modifier son nom
+    d'utilisateur et/ou sa photo de profil. L'email n'est volontairement
+    pas modifiable ici (c'est l'identifiant de connexion).
+    """
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'avatar']
+        read_only_fields = ['id', 'email']
+
+
+class RecentRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'date_joined']

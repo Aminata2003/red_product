@@ -2,14 +2,21 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
+from django.utils.dateparse import parse_datetime
 from django.core.mail import send_mail
 from django.conf import settings
-from .serializers import RegisterSerializer, CustomTokenObtainPairSerializer
+from .serializers import (
+    RegisterSerializer,
+    CustomTokenObtainPairSerializer,
+    ProfileUpdateSerializer,
+    RecentRegistrationSerializer,
+)
 
 User = get_user_model()
 
@@ -46,7 +53,6 @@ class ForgotPasswordView(APIView):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            # On renvoie quand même le message générique, sans envoyer de mail.
             return generic_response
 
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
@@ -117,3 +123,62 @@ class ResetPasswordConfirmView(APIView):
             {"detail": "Mot de passe réinitialisé avec succès."},
             status=status.HTTP_200_OK
         )
+
+
+class MeView(APIView):
+    """
+    Profil de l'admin connecté.
+    GET   : renvoie les infos actuelles (username, email, avatar).
+    PATCH : permet de modifier le username et/ou d'uploader une nouvelle photo
+            de profil (avatar). L'email n'est pas modifiable ici.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get(self, request):
+        serializer = ProfileUpdateSerializer(request.user)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        serializer = ProfileUpdateSerializer(
+            request.user, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
+class RecentRegistrationsView(APIView):
+    """
+    Alimente le badge/dropdown de notifications avec les inscriptions
+    récentes de comptes admin sur la plateforme.
+
+    GET /api/auth/notifications/recent-registrations/?since=<ISO datetime>
+    - "results" : les 10 dernières inscriptions (toujours renvoyées, pour
+      affichage dans le dropdown).
+    - "count_new" : nombre d'inscriptions survenues après `since` (le
+      frontend envoie la date de la dernière ouverture du dropdown, stockée
+      en local). Sans `since`, on compte par défaut celles des 7 derniers
+      jours, pour avoir un badge non vide au premier chargement.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        since_param = request.query_params.get('since')
+        since_dt = parse_datetime(since_param) if since_param else None
+
+        if since_dt:
+            new_count = User.objects.filter(date_joined__gt=since_dt).count()
+        else:
+            from django.utils import timezone
+            from datetime import timedelta
+            new_count = User.objects.filter(
+                date_joined__gt=timezone.now() - timedelta(days=7)
+            ).count()
+
+        recent_users = User.objects.order_by('-date_joined')[:10]
+
+        return Response({
+            "count_new": new_count,
+            "results": RecentRegistrationSerializer(recent_users, many=True).data,
+        })
