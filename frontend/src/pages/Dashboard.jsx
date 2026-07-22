@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
-import { Link } from "react-router-dom";
 
 // Icône enveloppe (Formulaires, E-mails) — path exact repris du Figma
 function EnvelopeIcon() {
@@ -38,10 +37,9 @@ function LetterIcon() {
 }
 
 // Couleurs exactes reprises du Figma (hex précis, pas d'approximation Tailwind)
-// "Utilisateurs" reste figé à 600 (valeur maquette) tant que sa définition n'est pas tranchée.
-// "hotels" et "emails" sont dynamiques : le backend doit renvoyer, dans /dashboard/stats/ :
-//   - hotels : nombre total d'hôtels en base
-//   - emails : nombre de comptes admin créés (inscriptions)
+// Suite au retour du coach : "utilisateurs" est désormais dynamique (nombre
+// réel de comptes créés), "emails" reste statique à 25 (comme au début).
+// "hotels" reste dynamique et scopé à l'admin connecté.
 const CARDS = [
   { key: "formulaires", label: "Formulaires", color: "#A88ADD", Icon: EnvelopeIcon },
   { key: "messages", label: "Messages", color: "#0CC2AA", Icon: LetterIcon },
@@ -60,7 +58,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await api.get("/api/dashboard/stats/");
+        const response = await api.get("/dashboard/stats/");
         setStats(response.data);
       } catch (err) {
         setError("Impossible de charger les statistiques.");
@@ -75,17 +73,11 @@ export default function Dashboard() {
 
   return (
     <Layout onSearch={setSearchTerm}>
-        {/* Barre blanche */}
-        <div className="sticky top-0 z-20 bg-white border-b border-gray-200 px-8 py-2 -mx-8 mb-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div className="flex flex-col items-start gap-1">
-              <h2 className="text-4xl font-light text-gray-800">
-                Bienvenue sur RED PRODUCT
-              </h2>
-              
+      <div className="w-full bg-white rounded-lg px-6 py-5 mb-8">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-800">
+          Bienvenue sur RED PRODUCT
+        </h2>
         <p className="text-sm text-gray-400">Lorem ipsum dolor sit amet consectetur</p>
-      </div>
-      </div>
       </div>
 
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
@@ -96,51 +88,26 @@ export default function Dashboard() {
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-         {filteredCards.map(({ key, label, color, Icon }) => {
-  const CardContent = (
-    <>
-      <div
-        className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-        style={{ backgroundColor: color }}
-      >
-        <Icon />
-      </div>
-
-      <div>
-        <p className="text-base font-semibold text-gray-800">
-          {key === "utilisateurs"
-            ? 600
-            : stats
-            ? stats[key]
-            : "…"}
-        </p>
-
-        <p className="text-xs text-gray-500">{label}</p>
-
-        <p className="text-xs text-gray-400">
-          Je ne sais pas quoi mettre
-        </p>
-      </div>
-    </>
-  );
-
-  return key === "hotels" ? (
-    <Link
-      key={key}
-      to="/hotels"
-      className="bg-white rounded-lg p-3 flex items-center gap-3 shadow-sm cursor-pointer hover:shadow-md transition"
-    >
-      {CardContent}
-    </Link>
-  ) : (
-    <div
-      key={key}
-      className="bg-white rounded-lg p-3 flex items-center gap-3 shadow-sm"
-    >
-      {CardContent}
-    </div>
-  );
-})} 
+          {filteredCards.map(({ key, label, color, Icon }) => (
+            <div
+              key={key}
+              className="bg-white rounded-lg p-3 flex items-center gap-3 shadow-sm"
+            >
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                style={{ backgroundColor: color }}
+              >
+                <Icon />
+              </div>
+              <div>
+                <p className="text-base font-semibold text-gray-800">
+                  {stats ? stats[key] : "…"}
+                </p>
+                <p className="text-xs text-gray-500">{label}</p>
+                <p className="text-xs text-gray-400">Je ne sais pas quoi mettre</p>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </Layout>
