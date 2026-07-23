@@ -3,9 +3,37 @@ import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
 import { useAuth } from "../context/AuthContext";
 
+function SpinnerIcon() {
+  return (
+    <svg
+      className="animate-spin"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+        opacity="0.25"
+      />
+      <path
+        d="M22 12a10 10 0 0 0-10-10"
+        stroke="currentColor"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export default function Register() {
   const navigate = useNavigate();
-  const { register, setLoading } = useAuth();
+  const { register, loading, setLoading } = useAuth();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -72,7 +100,8 @@ export default function Register() {
             placeholder="Nom"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full border-b border-gray-300 py-3 outline-none mb-5"
+            disabled={loading}
+            className="w-full border-b border-gray-300 py-3 outline-none mb-5 disabled:opacity-60"
           />
 
           <input
@@ -80,7 +109,8 @@ export default function Register() {
             placeholder="E-mail"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border-b border-gray-300 py-3 outline-none mb-5"
+            disabled={loading}
+            className="w-full border-b border-gray-300 py-3 outline-none mb-5 disabled:opacity-60"
           />
 
           <input
@@ -88,27 +118,34 @@ export default function Register() {
             placeholder="Mot de passe"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border-b border-gray-300 py-3 outline-none mb-5"
+            disabled={loading}
+            className="w-full border-b border-gray-300 py-3 outline-none mb-5 disabled:opacity-60"
           />
 
           <label className="flex items-start sm:items-center gap-2 text-sm mb-6">
-
             <input
               type="checkbox"
               checked={accept}
               onChange={(e) => setAccept(e.target.checked)}
+              disabled={loading}
               className="mt-0.5 sm:mt-0 shrink-0"
             />
-
             Accepter les termes et la politique
-
           </label>
 
           <button
             type="submit"
-            className="w-full bg-neutral-700 hover:bg-neutral-800 text-white rounded py-3 transition cursor-pointer"
+            disabled={loading}
+            className="w-full bg-neutral-700 hover:bg-neutral-800 text-white rounded py-3 transition cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            S'inscrire
+            {loading ? (
+              <>
+                <SpinnerIcon />
+                Inscription en cours...
+              </>
+            ) : (
+              "S'inscrire"
+            )}
           </button>
 
         </form>

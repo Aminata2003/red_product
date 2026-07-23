@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
@@ -39,18 +40,20 @@ function LetterIcon() {
 // Couleurs exactes reprises du Figma (hex précis, pas d'approximation Tailwind)
 // Suite au retour du coach : "utilisateurs" est désormais dynamique (nombre
 // réel de comptes créés), "emails" reste statique à 25 (comme au début).
-// "hotels" reste dynamique et scopé à l'admin connecté.
+// "hotels" reste dynamique et scopé à l'admin connecté ; sa carte redirige
+// désormais vers la liste des hôtels.
 const CARDS = [
   { key: "formulaires", label: "Formulaires", color: "#A88ADD", Icon: EnvelopeIcon },
   { key: "messages", label: "Messages", color: "#0CC2AA", Icon: LetterIcon },
   { key: "utilisateurs", label: "Utilisateurs", color: "#FCC100", Icon: PeopleIcon },
   { key: "emails", label: "E-mails", color: "#F90000", Icon: EnvelopeIcon },
-  { key: "hotels", label: "Hôtels", color: "#9C27B0", Icon: LetterIcon },
+  { key: "hotels", label: "Hôtels", color: "#9C27B0", Icon: LetterIcon, linkTo: "/hotels" },
   { key: "entites", label: "Entités", color: "#1565C0", Icon: PeopleIcon },
 ];
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -88,26 +91,34 @@ export default function Dashboard() {
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-          {filteredCards.map(({ key, label, color, Icon }) => (
-            <div
-              key={key}
-              className="bg-white rounded-lg p-3 flex items-center gap-3 shadow-sm"
-            >
+          {filteredCards.map(({ key, label, color, Icon, linkTo }) => {
+            const clickable = Boolean(linkTo);
+            return (
               <div
-                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                style={{ backgroundColor: color }}
+                key={key}
+                onClick={clickable ? () => navigate(linkTo) : undefined}
+                className={`bg-white rounded-lg p-3 flex items-center gap-3 shadow-sm ${
+                  clickable ? "cursor-pointer hover:shadow-md transition-shadow" : ""
+                }`}
               >
-                <Icon />
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: color }}
+                >
+                  <Icon />
+                </div>
+                <div>
+                  <p className="text-base font-semibold text-gray-800">
+                    {stats ? stats[key] : "…"}
+                  </p>
+                  <p className="text-xs text-gray-500">{label}</p>
+                  <p className="text-xs text-gray-400">
+                    {clickable ? "Voir la liste des hôtels" : "Je ne sais pas quoi mettre"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-base font-semibold text-gray-800">
-                  {stats ? stats[key] : "…"}
-                </p>
-                <p className="text-xs text-gray-500">{label}</p>
-                <p className="text-xs text-gray-400">Je ne sais pas quoi mettre</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </Layout>
