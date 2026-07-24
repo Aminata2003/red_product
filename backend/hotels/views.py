@@ -82,7 +82,7 @@ class DashboardStatsView(APIView):
             "formulaires": 0,
             "messages": 0,
             "utilisateurs": User.objects.count(),
-            "emails": 25,
+            "emails": 0,
             "hotels": Hotel.objects.filter(owner=request.user).count(),
             "entites": 0,
         }
