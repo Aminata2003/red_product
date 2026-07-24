@@ -371,31 +371,33 @@ export default function Layout({ children, onSearch }) {
       </div>
 
       {/* Modale Notifications */}
-      <Modal open={notifOpen} onClose={() => setNotifOpen(false)} title="Notifications">
-        <p className="text-sm text-gray-600 mb-3">Bienvenue, {user?.username} 👋</p>
-        {notifLoading ? (
-          <p className="text-sm text-gray-400">Chargement...</p>
-        ) : activities.length === 0 ? (
-          <p className="text-sm text-gray-500">Aucune activité récente sur les hôtels.</p>
-        ) : (
-          <>
-            <ul className="space-y-2 max-h-64 overflow-y-auto">
-              {activities.map((a) => (
-                <li key={a.id} className="text-sm text-gray-700 border-b border-gray-100 pb-2">
-                  {a.message}
-                </li>
-              ))}
-            </ul>
+<Modal open={notifOpen} onClose={() => setNotifOpen(false)} title="Notifications">
+  <div className="flex items-center justify-between mb-3">
+    <p className="text-sm text-gray-600">Bienvenue, {user?.username} 👋</p>
+    {notifBadge > 0 && (
+      <button
+        onClick={handleMarkAllRead}
+        className="text-xs font-medium text-red-600 hover:text-red-700 hover:underline cursor-pointer shrink-0"
+      >
+        Tout marquer comme lu
+      </button>
+    )}
+  </div>
 
-            <button
-              onClick={handleMarkAllRead}
-              className="mt-4 w-full text-sm font-medium text-red-600 border border-red-200 rounded-lg py-2 hover:bg-red-50 cursor-pointer"
-            >
-              Tout marquer comme lu
-            </button>
-          </>
-        )}
-      </Modal>
+  {notifLoading ? (
+    <p className="text-sm text-gray-400">Chargement...</p>
+  ) : activities.length === 0 ? (
+    <p className="text-sm text-gray-500">Aucune activité récente sur les hôtels.</p>
+  ) : (
+    <ul className="space-y-2 max-h-64 overflow-y-auto">
+      {activities.map((a) => (
+        <li key={a.id} className="text-sm text-gray-700 border-b border-gray-100 pb-2">
+          {a.message}
+        </li>
+      ))}
+    </ul>
+  )}
+</Modal>
 
       {/* Modale Profil - éditable */}
       <Modal open={profileOpen} onClose={() => setProfileOpen(false)} title="Mon profil">
