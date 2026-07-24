@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
@@ -72,6 +72,8 @@ function Modal({ open, onClose, title, children }) {
   );
 }
 
+const ACTIVITY_LAST_SEEN_KEY = 'hotel_activity_last_seen';
+
 export default function Layout({ children, onSearch }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -81,15 +83,43 @@ export default function Layout({ children, onSearch }) {
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
-  // --- Notifications : contenu fixe, pas de données sensibles d'autres comptes ---
-  const notifications = [
-    { id: 1, message: `Bienvenue, ${user?.username || 'Admin'} !` },
-    { id: 2, message: 'Vous pouvez mettre à jour votre profil (nom, photo) à tout moment.' },
-  ];
-  const notifBadge = notifications.length; // toujours 2
+  // --- Notifications : activité réelle des autres admins sur les hôtels ---
+  const [activities, setActivities] = useState([]);
+  const [notifBadge, setNotifBadge] = useState(0);
+  const [notifLoading, setNotifLoading] = useState(false);
 
-  const openNotifModal = () => {
+  const fetchActivity = async (since) => {
+    const params = since ? { since } : {};
+    const res = await api.get('/api/hotels/activity/', { params });
+    return res.data;
+  };
+
+  // Au chargement du layout : juste le badge, sans marquer comme "vu"
+  useEffect(() => {
+    const lastSeen = localStorage.getItem(ACTIVITY_LAST_SEEN_KEY);
+    fetchActivity(lastSeen || undefined)
+      .then((data) => setNotifBadge(data.count_new || 0))
+      .catch((err) => console.error('Erreur badge notifications :', err));
+  }, []);
+
+  const openNotifModal = async () => {
     setNotifOpen(true);
+    setNotifLoading(true);
+    try {
+      const lastSeen = localStorage.getItem(ACTIVITY_LAST_SEEN_KEY);
+      const data = await fetchActivity(lastSeen || undefined);
+      setActivities(data.results || []);
+    } catch (err) {
+      console.error('Erreur notifications :', err);
+      setActivities([]);
+    } finally {
+      setNotifLoading(false);
+    }
+  };
+
+  const handleMarkAllRead = () => {
+    localStorage.setItem(ACTIVITY_LAST_SEEN_KEY, new Date().toISOString());
+    setNotifBadge(0);
   };
 
   // --- Profil éditable (nom + avatar) ---
@@ -296,7 +326,7 @@ export default function Layout({ children, onSearch }) {
               "
             />
 
-            {/* Notification -> ouvre une modale avec 2 messages fixes */}
+            {/* Notification -> ouvre une modale avec l'activité réelle des autres admins */}
             <button
               onClick={openNotifModal}
               className="relative w-6 h-6 flex items-center justify-center cursor-pointer shrink-0"
@@ -308,7 +338,7 @@ export default function Layout({ children, onSearch }) {
               </svg>
               {notifBadge > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 bg-yellow-400 text-black text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center">
-                  {notifBadge}
+                  {notifBadge > 9 ? '9+' : notifBadge}
                 </span>
               )}
             </button>
@@ -342,13 +372,29 @@ export default function Layout({ children, onSearch }) {
 
       {/* Modale Notifications */}
       <Modal open={notifOpen} onClose={() => setNotifOpen(false)} title="Notifications">
-        <ul className="space-y-3">
-          {notifications.map((n) => (
-            <li key={n.id} className="text-sm text-gray-700">
-              {n.message}
-            </li>
-          ))}
-        </ul>
+        <p className="text-sm text-gray-600 mb-3">Bienvenue, {user?.username} 👋</p>
+        {notifLoading ? (
+          <p className="text-sm text-gray-400">Chargement...</p>
+        ) : activities.length === 0 ? (
+          <p className="text-sm text-gray-500">Aucune activité récente sur les hôtels.</p>
+        ) : (
+          <>
+            <ul className="space-y-2 max-h-64 overflow-y-auto">
+              {activities.map((a) => (
+                <li key={a.id} className="text-sm text-gray-700 border-b border-gray-100 pb-2">
+                  {a.message}
+                </li>
+              ))}
+            </ul>
+
+            <button
+              onClick={handleMarkAllRead}
+              className="mt-4 w-full text-sm font-medium text-red-600 border border-red-200 rounded-lg py-2 hover:bg-red-50 cursor-pointer"
+            >
+              Tout marquer comme lu
+            </button>
+          </>
+        )}
       </Modal>
 
       {/* Modale Profil - éditable */}

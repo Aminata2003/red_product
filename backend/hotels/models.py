@@ -40,3 +40,36 @@ class Hotel(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class HotelActivityLog(models.Model):
+    """
+    Journal d'activité sur les hôtels (modification/suppression), utilisé
+    pour alimenter les notifications des AUTRES admins. On ne stocke qu'un
+    message texte (nom de l'hôtel, action, auteur) : l'hôtel lui-même reste
+    privé à son propriétaire, seul le fait qu'une action a eu lieu est
+    partagé.
+    """
+    class Action(models.TextChoices):
+        CREATED = 'created', 'créé'
+        UPDATED = 'updated', 'modifié'
+        DELETED = 'deleted', 'supprimé'
+
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='hotel_activities',
+    )
+    # snapshot au moment de l'action : reste lisible même si le compte admin
+    # ou l'hôtel est supprimé par la suite
+    actor_username = models.CharField(max_length=150)
+    hotel_name = models.CharField(max_length=255)
+    action = models.CharField(max_length=10, choices=Action.choices)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.actor_username} a {self.action} {self.hotel_name}"

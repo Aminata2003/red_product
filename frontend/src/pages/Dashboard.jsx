@@ -40,8 +40,10 @@ function LetterIcon() {
 // Couleurs exactes reprises du Figma (hex précis, pas d'approximation Tailwind)
 // Suite au retour du coach : "utilisateurs" est désormais dynamique (nombre
 // réel de comptes créés), "emails" reste statique à 25 (comme au début).
+// "formulaires", "messages", "entites" ne sont pas encore développés côté
+// backend -> 0 par défaut plutôt qu'une fausse valeur en dur.
 // "hotels" reste dynamique et scopé à l'admin connecté ; sa carte redirige
-// désormais vers la liste des hôtels.
+// vers la liste des hôtels.
 const CARDS = [
   { key: "formulaires", label: "Formulaires", color: "#A88ADD", Icon: EnvelopeIcon },
   { key: "messages", label: "Messages", color: "#0CC2AA", Icon: LetterIcon },
@@ -109,7 +111,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-base font-semibold text-gray-800">
-                    {stats ? stats[key] : "…"}
+                    {stats ? (stats[key] ?? 0) : "…"}
                   </p>
                   <p className="text-xs text-gray-500">{label}</p>
                   <p className="text-xs text-gray-400">
